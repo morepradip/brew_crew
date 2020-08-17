@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:brew_crew/models/user.dart';
@@ -6,26 +7,23 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SignIn extends StatefulWidget {
+  final Function toggleSignInRegisterScreen;
+  SignIn({this.toggleSignInRegisterScreen});
+
   @override
   _SignInState createState() => _SignInState();
 }
 
 class _SignInState extends State<SignIn> {
   final Auth _auth = Auth();
+  final _formKey = GlobalKey<FormState>();
   String email = '';
   String password = '';
+  String error = '';
 
-/*
-  _signInAnon() async {
-    User result = await _auth.signInAnon();
-    if (result != null) {
-      print('User singed in');
-      print(result.uid);
-    } else {
-      print('Error in sign in');
-    }
+  _toggleScreen() {
+    widget.toggleSignInRegisterScreen();
   }
-*/
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +32,13 @@ class _SignInState extends State<SignIn> {
       appBar: AppBar(
         title: Text('Sign In'),
         backgroundColor: Colors.brown[400],
+        actions: <Widget>[
+          FlatButton.icon(
+            onPressed: _toggleScreen,
+            icon: Icon(Icons.person),
+            label: Text('Register'),
+          )
+        ],
       ),
       body: Container(
           padding: EdgeInsets.symmetric(
@@ -41,12 +46,14 @@ class _SignInState extends State<SignIn> {
             horizontal: 50,
           ),
           child: Form(
+            key: _formKey,
             child: Column(
               children: <Widget>[
                 SizedBox(
                   height: 20,
                 ),
                 TextFormField(
+                  validator: (value) => value.isEmpty ? 'Enter an email' : null,
                   onChanged: (value) {
                     setState(() {
                       email = value;
@@ -57,6 +64,8 @@ class _SignInState extends State<SignIn> {
                   height: 20,
                 ),
                 TextFormField(
+                  validator: (value) =>
+                      value.length < 6 ? 'Password must be 8 or more ' : null,
                   obscureText: true,
                   onChanged: (value) {
                     setState(() {
@@ -73,11 +82,20 @@ class _SignInState extends State<SignIn> {
                     'Sign in',
                     style: TextStyle(color: Colors.white),
                   ),
-                  onPressed: () {
-                    print(email);
-                    print(password);
+                  onPressed: () async {
+                    if (_formKey.currentState.validate()) {
+                      dynamic user = await _auth.signInWithEmailAndPassword(email, password);
+                      if(user == null){
+                        setState(() {
+                          error = 'Invalid Credentials';
+                        });
+                      }
+                    }
                   },
-                )
+                ),
+                SizedBox(height: 8,),
+                Text(error),
+
               ],
             ),
           )),

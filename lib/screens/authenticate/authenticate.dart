@@ -8,8 +8,21 @@ class Authenticate extends StatefulWidget {
 }
 
 class _AuthenticateState extends State<Authenticate> {
+
+  bool signInScreen = true;
+
+  void toggleSignInRegisterScreen(){
+    setState(() {
+      signInScreen = !signInScreen;
+      print(signInScreen);
+    });
+  }
   @override
   Widget build(BuildContext context) {
-    return Register();
+    if (signInScreen){
+    return SignIn(toggleSignInRegisterScreen: toggleSignInRegisterScreen);
+    } else{
+      return Register(toggleSignInRegisterScreen: toggleSignInRegisterScreen);
+    }
   }
 }
