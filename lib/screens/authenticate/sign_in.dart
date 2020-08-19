@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:brew_crew/models/user.dart';
 import 'package:brew_crew/services/auth.dart';
 import 'package:brew_crew/shared/constants.dart';
+import 'package:brew_crew/shared/loading.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -18,6 +19,7 @@ class SignIn extends StatefulWidget {
 class _SignInState extends State<SignIn> {
   final Auth _auth = Auth();
   final _formKey = GlobalKey<FormState>();
+  bool loading = false;
   String email = '';
   String password = '';
   String error = '';
@@ -28,7 +30,7 @@ class _SignInState extends State<SignIn> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return loading ? Loading() : Scaffold(
       backgroundColor: Colors.brown[100],
       appBar: AppBar(
         title: Text('Sign In'),
@@ -89,11 +91,15 @@ class _SignInState extends State<SignIn> {
                     ),
                     onPressed: () async {
                       if (_formKey.currentState.validate()) {
+                        setState(() {
+                          loading = true;
+                        });
                         dynamic user = await _auth.signInWithEmailAndPassword(
                             email, password);
                         if (user == null) {
                           setState(() {
                             error = 'Invalid Credentials';
+                            loading = false;
                           });
                         }
                       }
